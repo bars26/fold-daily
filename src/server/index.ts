@@ -4,6 +4,7 @@ import { createServer, getServerPort } from '@devvit/web/server';
 import { api } from './routes/api.ts';
 import { menu } from './routes/menu.ts';
 import { scheduler, triggers } from './routes/triggers.ts';
+import { telemetry } from './routes/telemetry.ts';
 
 const app = new Hono();
 const internal = new Hono();
@@ -12,6 +13,7 @@ internal.route('/menu', menu);
 internal.route('/triggers', triggers);
 internal.route('/scheduler', scheduler);
 
+app.route('/api/telemetry', telemetry);
 app.route('/api', api);
 app.route('/internal', internal);
 

@@ -26,6 +26,7 @@ import { formatMs } from '../shared/share.ts';
 import { Board } from './Board.tsx';
 import { Pattern } from './Pattern.tsx';
 import { HowTo } from './HowTo.tsx';
+import { track } from './track.ts';
 
 const TUTORIAL_KEY = 'fold.tutorial.done';
 
@@ -129,6 +130,7 @@ const ResultSheet = ({
     try {
       await json(await fetch('/api/share', { method: 'POST' }));
       setSharing('done');
+      track.action('share');
       showToast('Result posted as a comment');
     } catch (e) {
       setSharing('idle');
@@ -139,6 +141,7 @@ const ResultSheet = ({
   const loadBoard = async () => {
     try {
       setBoard(await json<LeaderboardResponse>(await fetch('/api/leaderboard')));
+      track.action('leaderboard');
     } catch {
       showToast('Could not load the leaderboard');
     }
@@ -320,6 +323,7 @@ export const App = () => {
       .then((r) => json<InitResponse>(r))
       .then((d) => {
         setData(d);
+        track.ready();
         if (d.mine) {
           setResult({ mine: d.mine, streak: d.streak, stats: d.stats, rank: null });
           setShowResult(true);
@@ -346,6 +350,8 @@ export const App = () => {
     // Practice puzzles are unranked; the seed only needs to differ each time.
     const seed = 1_000_000 + Math.floor(Math.random() * 1_000_000_000);
     const g = generateWith(seed, seed, PRACTICE_TIERS[level]);
+    track.abandon();
+    track.action('practice');
     clearBoard();
     setSolved(false);
     setShowResult(false);
@@ -367,14 +373,19 @@ export const App = () => {
         writeFlag(TUTORIAL_KEY);
       }
       const start = startedAt ?? Date.now();
-      if (startedAt === null) setStartedAt(start);
+      if (startedAt === null) {
+        setStartedAt(start);
+        track.start(practice ? 'practice' : 'daily');
+      }
       const next = [...folds, f];
       setFolds(next);
+      track.fold(next.length, active.par);
       const s = replay(active.w, active.h, next);
       if (!s || topView(s, active.front, active.back) !== active.target) return;
 
       const ms = Date.now() - start;
       setSolved(true);
+      track.end(next.length, active.par);
       if (practice) {
         const done: MyResult = { folds: next.length, ms, hints, onTime: false };
         setTimeout(() => setPractice((p) => (p ? { ...p, done } : p)), 500);
@@ -419,6 +430,7 @@ export const App = () => {
         return;
       }
       setHint({ fold: path[0]!, paper });
+      track.action('hint');
       setHints((h) => h + 1);
     }, 30);
   };
@@ -484,7 +496,10 @@ export const App = () => {
             </span>
           )}
           <button
-            onClick={() => setHowTo(true)}
+            onClick={() => {
+              setHowTo(true);
+              track.action('how_to');
+            }}
             aria-label="How to play"
             className="h-8 w-8 rounded-full bg-ink-2 text-sm font-semibold ring-1 ring-white/10"
           >
@@ -543,14 +558,20 @@ export const App = () => {
 
       <footer className="flex items-center justify-center gap-2 px-4 pb-4 pt-2">
         <button
-          onClick={() => setFolds((f) => f.slice(0, -1))}
+          onClick={() => {
+            setFolds((f) => f.slice(0, -1));
+            track.action('undo');
+          }}
           disabled={!folds.length || solved}
           className="rounded-full bg-ink-2 px-5 py-2 text-sm ring-1 ring-white/10 disabled:opacity-40"
         >
           ↶ Undo
         </button>
         <button
-          onClick={restart}
+          onClick={() => {
+            restart();
+            track.action('unfold_all');
+          }}
           disabled={!folds.length}
           className="rounded-full bg-ink-2 px-5 py-2 text-sm ring-1 ring-white/10 disabled:opacity-40"
         >

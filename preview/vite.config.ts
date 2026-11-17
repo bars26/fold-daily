@@ -8,7 +8,10 @@ export default defineConfig({
   root: fileURLToPath(new URL('..', import.meta.url)),
   plugins: [react(), tailwind()],
   resolve: {
-    alias: { '@devvit/web/client': fileURLToPath(new URL('./devvit-stub.ts', import.meta.url)) },
+    alias: {
+      '@devvit/web/client': fileURLToPath(new URL('./devvit-stub.ts', import.meta.url)),
+      '@devvit/analytics/client/reddit': fileURLToPath(new URL('./analytics-stub.ts', import.meta.url)),
+    },
   },
   server: { port: 5174, fs: { allow: ['..'] } },
 });
