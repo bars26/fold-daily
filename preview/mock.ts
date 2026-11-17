@@ -3,6 +3,7 @@ import { generate, publicPuzzle, dateForPuzzle } from '../src/shared/daily.ts';
 import { solves, type Fold } from '../src/shared/fold.ts';
 
 const n = Number(new URLSearchParams(location.search).get('n') ?? '1');
+if (new URLSearchParams(location.search).has('notut')) localStorage.setItem('fold.tutorial.done', '1');
 const g = generate(n);
 const hist: Record<string, number> = { [String(g.par)]: 12, [String(g.par + 1)]: 7, [String(g.par + 2)]: 3 };
 (window as unknown as { __postData: unknown }).__postData = {
