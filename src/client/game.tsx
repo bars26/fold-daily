@@ -28,6 +28,7 @@ import { Pattern } from './Pattern.tsx';
 import { HowTo } from './HowTo.tsx';
 import { track } from './track.ts';
 import { Creator } from './Creator.tsx';
+import { isMuted, playFold, playWin, setMuted } from './sound.ts';
 
 const TUTORIAL_KEY = 'fold.tutorial.done';
 
@@ -336,6 +337,7 @@ export const App = () => {
     null
   );
   const [creating, setCreating] = useState(false);
+  const [mute, setMute] = useState(isMuted());
   const [boxRef, box] = useBoxSize();
 
   useEffect(() => {
@@ -399,12 +401,14 @@ export const App = () => {
       }
       const next = [...folds, f];
       setFolds(next);
+      playFold();
       track.fold(next.length, active.par);
       const s = replay(active.w, active.h, next);
       if (!s || topView(s, active.front, active.back) !== active.target) return;
 
       const ms = Date.now() - start;
       setSolved(true);
+      setTimeout(playWin, 250);
       track.end(next.length, active.par);
       if (practice) {
         const done: MyResult = { folds: next.length, ms, hints, onTime: false };
@@ -517,6 +521,16 @@ export const App = () => {
               🔥 {data.streak.current}
             </span>
           )}
+          <button
+            onClick={() => {
+              setMuted(!mute);
+              setMute(!mute);
+            }}
+            aria-label={mute ? 'Turn sound on' : 'Turn sound off'}
+            className="h-8 w-8 rounded-full bg-ink-2 text-sm ring-1 ring-white/10"
+          >
+            {mute ? '🔇' : '🔊'}
+          </button>
           <button
             onClick={() => {
               setHowTo(true);

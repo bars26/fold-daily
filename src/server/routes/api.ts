@@ -114,6 +114,18 @@ api.post('/solve', async (c) => {
     getStats(cur.scope),
     getBoard(cur.scope, username),
   ]);
+  // Daily solvers wear their streak as user flair in the community.
+  if (improved && cur.scope.daily !== null && streak && streak.current > 0) {
+    reddit
+      .setUserFlair({
+        subredditName: context.subredditName,
+        username,
+        text: `🔥 ${streak.current}-day Fold streak`,
+        backgroundColor: '#e4572e',
+        textColor: 'light',
+      })
+      .catch((e: unknown) => console.warn('flair failed', e));
+  }
   return c.json<SolveResponse>({
     type: 'solve',
     mine,
@@ -122,6 +134,17 @@ api.post('/solve', async (c) => {
     stats,
     rank: board.me?.rank ?? null,
   });
+});
+
+/** Tiny endpoint for the feed card: how many people solved this post. */
+api.get('/stats', async (c) => {
+  try {
+    const cur = await current();
+    const stats = await getStats(cur.scope);
+    return c.json({ type: 'stats', players: stats.players });
+  } catch {
+    return c.json({ type: 'stats', players: 0 });
+  }
 });
 
 api.get('/leaderboard', async (c) => {

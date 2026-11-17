@@ -57,6 +57,7 @@ window.fetch = async (input: RequestInfo | URL, init?: RequestInit) => {
       ],
       me: null,
     });
+  if (url.startsWith('/api/stats')) return reply({ type: 'stats', players: 23 });
   if (url.startsWith('/api/share')) return reply({ type: 'share', ok: true });
   if (url.startsWith('/api/create')) {
     const { checkCustom } = await import('../src/shared/custom.ts');

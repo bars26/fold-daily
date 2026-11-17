@@ -1,7 +1,7 @@
 import './index.css';
 
 import { context, requestExpandedMode } from '@devvit/web/client';
-import { StrictMode } from 'react';
+import { StrictMode, useEffect, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import type { FoldPostData } from '../shared/api.ts';
 import { Pattern } from './Pattern.tsx';
@@ -12,6 +12,13 @@ const isFoldData = (d: unknown): d is FoldPostData =>
 /** Inline feed view: kept tiny — no server call, everything comes from postData. */
 export const Splash = () => {
   const data = isFoldData(context.postData) ? context.postData : null;
+  const [players, setPlayers] = useState<number | null>(null);
+  useEffect(() => {
+    fetch('/api/stats')
+      .then((r) => r.json() as Promise<{ players?: number }>)
+      .then((d) => setPlayers(typeof d.players === 'number' ? d.players : null))
+      .catch(() => setPlayers(null));
+  }, []);
   return (
     <div className="paper-texture flex min-h-screen flex-col items-center justify-center gap-4 px-4 py-6 text-center">
       <div className="flex items-baseline gap-2">
@@ -43,6 +50,11 @@ export const Splash = () => {
       >
         Start folding
       </button>
+      {players !== null && players > 0 && (
+        <p className="text-xs text-paper/60">
+          {players} {players === 1 ? 'person has' : 'people have'} folded this
+        </p>
+      )}
     </div>
   );
 };
