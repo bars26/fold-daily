@@ -27,6 +27,7 @@ import { Board } from './Board.tsx';
 import { Pattern } from './Pattern.tsx';
 import { HowTo } from './HowTo.tsx';
 import { track } from './track.ts';
+import { Creator } from './Creator.tsx';
 
 const TUTORIAL_KEY = 'fold.tutorial.done';
 
@@ -107,6 +108,7 @@ type ResultProps = {
   loggedIn: boolean;
   onAgain: () => void;
   onPractice: () => void;
+  onCreate: () => void;
   onClose: () => void;
 };
 
@@ -119,6 +121,7 @@ const ResultSheet = ({
   loggedIn,
   onAgain,
   onPractice,
+  onCreate,
   onClose,
 }: ResultProps) => {
   const [board, setBoard] = useState<LeaderboardResponse | null>(null);
@@ -151,7 +154,9 @@ const ResultSheet = ({
     <div className="absolute inset-0 z-40 flex items-end justify-center bg-ink/70 backdrop-blur-sm sm:items-center">
       <div className="pop m-3 flex max-h-[92vh] w-full max-w-sm flex-col items-center gap-4 overflow-y-auto rounded-3xl bg-ink-2 p-5 shadow-2xl ring-1 ring-white/10">
         <div className="text-center">
-          <p className="text-xs uppercase tracking-[0.3em] text-kraft/70">Fold #{data.puzzle.number}</p>
+          <p className="text-xs uppercase tracking-[0.3em] text-kraft/70">
+            {data.kind === 'custom' ? `Fold by u/${data.author}` : `Fold #${data.puzzle.number}`}
+          </p>
           <h2 className="font-display mt-1 text-3xl">{atPar ? 'Perfect fold' : 'Folded!'}</h2>
         </div>
         <div className="grid w-full grid-cols-3 gap-2 text-center">
@@ -171,7 +176,7 @@ const ResultSheet = ({
           </div>
         </div>
         {rank !== null && <p className="text-sm text-paper/70">You are #{rank} on today's board.</p>}
-        {!mine.onTime && loggedIn && (
+        {!mine.onTime && loggedIn && data.kind === 'daily' && (
           <p className="text-xs text-paper/50">Solved after its day, so it does not count toward your streak.</p>
         )}
         {!loggedIn && <p className="text-xs text-paper/60">Log in to Reddit to keep streaks and join the board.</p>}
@@ -222,6 +227,12 @@ const ResultSheet = ({
           >
             Keep folding: practice puzzles →
           </button>
+          <button
+            onClick={onCreate}
+            className="rounded-full bg-ink-3 py-2.5 text-sm font-semibold ring-1 ring-kraft/40 active:scale-[0.98]"
+          >
+            🎨 Make your own Fold for others
+          </button>
           <p className="-mt-1 text-center text-[11px] text-paper/50">
             A new daily Fold drops every day at 00:00 UTC.
           </p>
@@ -254,12 +265,14 @@ const PracticeSheet = ({
   level,
   onNext,
   onBack,
+  onCreate,
 }: {
   done: MyResult;
   par: number;
   level: Level;
   onNext: (l: Level) => void;
   onBack: () => void;
+  onCreate: () => void;
 }) => (
   <div className="absolute inset-0 z-40 flex items-end justify-center bg-ink/70 backdrop-blur-sm sm:items-center">
     <div className="pop m-3 flex w-full max-w-sm flex-col items-center gap-4 rounded-3xl bg-ink-2 p-5 shadow-2xl ring-1 ring-white/10">
@@ -288,6 +301,12 @@ const PracticeSheet = ({
           </button>
         ))}
       </div>
+      <button
+        onClick={onCreate}
+        className="w-full rounded-full bg-ink-3 py-2 text-sm font-semibold ring-1 ring-kraft/40"
+      >
+        🎨 Make your own Fold
+      </button>
       <button onClick={onBack} className="text-sm text-paper/60 underline underline-offset-2">
         Back to today's Fold
       </button>
@@ -316,6 +335,7 @@ export const App = () => {
   const [practice, setPractice] = useState<{ level: Level; puzzle: Puzzle; done: MyResult | null } | null>(
     null
   );
+  const [creating, setCreating] = useState(false);
   const [boxRef, box] = useBoxSize();
 
   useEffect(() => {
@@ -476,7 +496,7 @@ export const App = () => {
           <p className="font-display text-2xl leading-none">
             Fold{' '}
             <span className="text-kraft/80">
-              {practice ? 'practice' : `#${puzzle.number}`}
+              {practice ? 'practice' : data.kind === 'custom' ? `by u/${data.author}` : `#${puzzle.number}`}
             </span>
           </p>
           <p className="mt-1 text-xs text-paper/50">
@@ -484,6 +504,8 @@ export const App = () => {
               <button onClick={backToDaily} className="underline underline-offset-2">
                 ← back to today's Fold
               </button>
+            ) : data.kind === 'custom' ? (
+              'Community puzzle'
             ) : (
               `${data.date} · ${data.tier}`
             )}
@@ -595,6 +617,8 @@ export const App = () => {
 
       {howTo && <HowTo onClose={closeHowTo} />}
 
+      {creating && <Creator loggedIn={!!data.username} onClose={() => setCreating(false)} />}
+
       {showResult && result && (
         <ResultSheet
           data={data}
@@ -605,6 +629,7 @@ export const App = () => {
           loggedIn={!!data.username}
           onAgain={restart}
           onPractice={() => startPractice('easy')}
+          onCreate={() => setCreating(true)}
           onClose={() => setShowResult(false)}
         />
       )}
@@ -616,6 +641,7 @@ export const App = () => {
           level={practice.level}
           onNext={startPractice}
           onBack={backToDaily}
+          onCreate={() => setCreating(true)}
         />
       )}
     </div>

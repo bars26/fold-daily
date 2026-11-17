@@ -7,7 +7,7 @@ export const formatMs = (ms: number): string => {
 
 /** Spoiler-free result: one square per fold, orange up to par, grey beyond. */
 export const shareText = (
-  n: number,
+  label: string,
   tier: string,
   par: number,
   r: MyResult,
@@ -17,7 +17,7 @@ export const shareText = (
   const verdict = r.folds <= par ? '⭐ par' : `+${r.folds - par} over par`;
   const hinted = r.hints ? `, 💡${r.hints}` : '';
   const lines = [
-    `Fold #${n} (${tier}) — ${r.folds} folds, ${verdict}, ${formatMs(r.ms)}${hinted}`,
+    `Fold ${label} (${tier}) — ${r.folds} folds, ${verdict}, ${formatMs(r.ms)}${hinted}`,
     squares,
   ];
   if (streak && streak.current > 1) lines.push(`🔥 ${streak.current}-day streak`);

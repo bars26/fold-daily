@@ -1,6 +1,8 @@
 import type { Fold, Puzzle } from './fold.ts';
 
 export type FoldPostData = {
+  kind?: 'daily' | 'custom';
+  author?: string;
   n: number;
   date: string;
   tier: string;
@@ -20,6 +22,9 @@ export type Stats = {
 
 export type InitResponse = {
   type: 'init';
+  kind: 'daily' | 'custom';
+  /** Creator's username for community puzzles. */
+  author: string | null;
   puzzle: Puzzle;
   tier: string;
   date: string;
@@ -50,5 +55,9 @@ export type LeaderboardResponse = {
 };
 
 export type ShareResponse = { type: 'share'; ok: true };
+
+export type CreateRequest = { w: number; h: number; front: number[]; folds: Fold[] };
+
+export type CreateResponse = { type: 'create'; url: string; par: number };
 
 export type ErrorResponse = { status: 'error'; message: string };

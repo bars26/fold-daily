@@ -1,7 +1,8 @@
 import { context, reddit } from '@devvit/web/server';
 import { dateForPuzzle, puzzleNumberFor } from '../../shared/daily.ts';
 import type { FoldPostData } from '../../shared/api.ts';
-import { getPuzzle, linkPost, postForPuzzle } from './store.ts';
+import type { Puzzle } from '../../shared/fold.ts';
+import { getPuzzle, linkPost, postForPuzzle, saveCustom } from './store.ts';
 
 const prettyDate = (iso: string) =>
   new Date(`${iso}T12:00:00Z`).toLocaleDateString('en-US', {
@@ -30,4 +31,28 @@ export const createPuzzlePost = async (n: number = puzzleNumberFor(Date.now())) 
   });
   await linkPost(n, post.id);
   return { id: post.id, created: true };
+};
+
+/** Posts a community puzzle (as the app account, crediting the creator). */
+export const createCustomPost = async (author: string, p: Puzzle) => {
+  const postData: FoldPostData = {
+    kind: 'custom',
+    author,
+    n: 0,
+    date: '',
+    tier: 'Community',
+    target: p.target,
+    par: p.par,
+  };
+  const post = await reddit.submitCustomPost({
+    subredditName: context.subredditName,
+    title: `u/${author} folded this. Can you match it in ${p.par}?`,
+    entry: 'default',
+    postData,
+    textFallback: {
+      text: `A community Fold by u/${author}: fold the sheet to match the pattern in ${p.par} folds. Open this post on Reddit to play.`,
+    },
+  });
+  await saveCustom(post.id, { ...p, tier: 'Community', author });
+  return post;
 };

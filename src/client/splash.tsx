@@ -16,7 +16,11 @@ export const Splash = () => {
     <div className="paper-texture flex min-h-screen flex-col items-center justify-center gap-4 px-4 py-6 text-center">
       <div className="flex items-baseline gap-2">
         <span className="font-display text-3xl tracking-wide">Fold</span>
-        {data && <span className="text-sm text-kraft/80">#{data.n}</span>}
+        {data && (
+          <span className="text-sm text-kraft/80">
+            {data.kind === 'custom' ? `by u/${data.author}` : `#${data.n}`}
+          </span>
+        )}
       </div>
       {data ? (
         <>
@@ -24,7 +28,7 @@ export const Splash = () => {
             <Pattern view={data.target} size={112} />
           </div>
           <p className="max-w-[18rem] text-sm text-paper/80">
-            Fold the sheet until it looks like this.{' '}
+            {data.kind === 'custom' ? 'A community puzzle. ' : ''}Fold the sheet until it looks like this.{' '}
             <span className="text-kraft">
               {data.tier} · par {data.par}
             </span>

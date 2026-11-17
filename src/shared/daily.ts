@@ -45,7 +45,7 @@ export const tierFor = (n: number): Tier => {
 };
 
 /** mulberry32 */
-const rng = (seed: number) => {
+export const rng = (seed: number) => {
   let a = seed >>> 0;
   return () => {
     a = (a + 0x6d2b79f5) >>> 0;
@@ -59,7 +59,7 @@ const rng = (seed: number) => {
 /** Colour index 0 is always the back of the sheet; fronts use 1..colors. */
 export const BACK = 0;
 
-const makeFront = (w: number, h: number, colors: number, r: () => number) => {
+export const makeFront = (w: number, h: number, colors: number, r: () => number) => {
   // Blobby regions rather than noise: seed a few points and grow, so the
   // target reads as shapes a person can reason about.
   const front = new Array<number>(w * h).fill(0);

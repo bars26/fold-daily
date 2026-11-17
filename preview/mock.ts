@@ -23,6 +23,8 @@ window.fetch = async (input: RequestInfo | URL, init?: RequestInit) => {
   if (url.startsWith('/api/init'))
     return reply({
       type: 'init',
+      kind: 'daily',
+      author: null,
       puzzle: publicPuzzle(g),
       tier: g.tier.name,
       date: dateForPuzzle(n),
@@ -56,5 +58,13 @@ window.fetch = async (input: RequestInfo | URL, init?: RequestInit) => {
       me: null,
     });
   if (url.startsWith('/api/share')) return reply({ type: 'share', ok: true });
+  if (url.startsWith('/api/create')) {
+    const { checkCustom } = await import('../src/shared/custom.ts');
+    const b = JSON.parse(String(init?.body)) as { w: number; h: number; front: number[]; folds: Fold[] };
+    const r = checkCustom(b.w, b.h, b.front, b.folds);
+    return r.ok
+      ? reply({ type: 'create', url: 'https://reddit.com/r/test/comments/abc', par: r.par })
+      : reply({ status: 'error', message: r.reason }, 400);
+  }
   return realFetch(input, init);
 };
