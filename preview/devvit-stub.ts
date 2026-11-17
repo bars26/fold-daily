@@ -12,4 +12,4 @@ export const requestExpandedMode = () => {
   location.href = '/game.html' + location.search;
 };
 const n = Number(new URLSearchParams(location.search).get('n') ?? '1');
-export const context = { postData: (window as unknown as { __postData?: unknown }).__postData, username: 'preview', n };
+export const context = { postId: 't3_preview', postData: (window as unknown as { __postData?: unknown }).__postData, username: 'preview', n };

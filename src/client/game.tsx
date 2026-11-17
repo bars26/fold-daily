@@ -2,7 +2,7 @@ import './index.css';
 
 import { StrictMode, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { createRoot } from 'react-dom/client';
-import { showToast } from '@devvit/web/client';
+import { context, showToast } from '@devvit/web/client';
 import type {
   ErrorResponse,
   InitResponse,
@@ -27,6 +27,7 @@ import { Board } from './Board.tsx';
 import { Pattern } from './Pattern.tsx';
 import { HowTo } from './HowTo.tsx';
 import { Tutorial } from './Tutorial.tsx';
+import { Archive } from './Archive.tsx';
 import { track } from './track.ts';
 import { Creator } from './Creator.tsx';
 import { isMuted, playFold, playWin, setMuted } from './sound.ts';
@@ -111,6 +112,7 @@ type ResultProps = {
   onAgain: () => void;
   onPractice: () => void;
   onCreate: () => void;
+  onArchive: () => void;
   onClose: () => void;
 };
 
@@ -124,6 +126,7 @@ const ResultSheet = ({
   onAgain,
   onPractice,
   onCreate,
+  onArchive,
   onClose,
 }: ResultProps) => {
   const [board, setBoard] = useState<LeaderboardResponse | null>(null);
@@ -239,6 +242,9 @@ const ResultSheet = ({
             A new daily Fold drops every day at 00:00 UTC.
           </p>
           <div className="grid grid-cols-2 gap-2">
+            <button onClick={onArchive} className="rounded-full bg-ink-3 py-2 text-sm">
+              📅 More Folds
+            </button>
             {!board && (
               <button onClick={loadBoard} className="rounded-full bg-ink-3 py-2 text-sm">
                 Leaderboard
@@ -340,6 +346,7 @@ export const App = () => {
   );
   const [creating, setCreating] = useState(false);
   const [mute, setMute] = useState(isMuted());
+  const [archive, setArchive] = useState(false);
   const [boxRef, box] = useBoxSize();
 
   useEffect(() => {
@@ -524,6 +531,13 @@ export const App = () => {
             </span>
           )}
           <button
+            onClick={() => setArchive(true)}
+            aria-label="More puzzles"
+            className="h-8 w-8 rounded-full bg-ink-2 text-sm ring-1 ring-white/10"
+          >
+            📅
+          </button>
+          <button
             onClick={() => {
               setMuted(!mute);
               setMute(!mute);
@@ -633,6 +647,10 @@ export const App = () => {
 
       {howTo && <HowTo onClose={closeHowTo} />}
 
+      {archive && (
+        <Archive currentPostId={context.postId ?? null} onClose={() => setArchive(false)} />
+      )}
+
       {lesson && (
         <Tutorial
           onDone={() => {
@@ -655,6 +673,7 @@ export const App = () => {
           onAgain={restart}
           onPractice={() => startPractice('easy')}
           onCreate={() => setCreating(true)}
+          onArchive={() => setArchive(true)}
           onClose={() => setShowResult(false)}
         />
       )}

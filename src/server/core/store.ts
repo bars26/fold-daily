@@ -20,6 +20,7 @@ const k = {
   hist: (s: Scope) => `hist:${s.key}`,
   board: (s: Scope) => `board:${s.key}`,
   streak: (user: string) => `streak:${user}`,
+  customs: 'customs',
 };
 
 export type FullPuzzle = Puzzle & { tier: string };
@@ -47,8 +48,18 @@ export const puzzleForPost = async (postId: string): Promise<number | null> => {
   return v ? Number(v) : null;
 };
 
-export const saveCustom = (postId: string, p: CustomPuzzle) =>
-  redis.set(k.custom(postId), JSON.stringify(p));
+export const saveCustom = async (postId: string, p: CustomPuzzle) => {
+  await redis.set(k.custom(postId), JSON.stringify(p));
+  await redis.zAdd(k.customs, { member: postId, score: Date.now() });
+};
+
+/** Newest community puzzles first. */
+export const recentCustoms = async (limit: number) => {
+  const total = await redis.zCard(k.customs);
+  if (!total) return [];
+  const rows = await redis.zRange(k.customs, Math.max(0, total - limit), total - 1, { by: 'rank' });
+  return rows.map((r) => r.member).reverse();
+};
 
 export const getCustom = async (postId: string): Promise<CustomPuzzle | null> => {
   const v = await redis.get(k.custom(postId));

@@ -1,6 +1,8 @@
 import { Hono } from 'hono';
 import { context, reddit } from '@devvit/web/server';
 import type {
+  ArchiveEntry,
+  ArchiveResponse,
   CreateRequest,
   CreateResponse,
   ErrorResponse,
@@ -27,6 +29,8 @@ import {
   getStreak,
   madeToday,
   MAX_MADE_PER_DAY,
+  postForPuzzle,
+  recentCustoms,
   puzzleForPost,
   recordSolve,
   type FullPuzzle,
@@ -134,6 +138,64 @@ api.post('/solve', async (c) => {
     stats,
     rank: board.me?.rank ?? null,
   });
+});
+
+/** Past dailies (up to 30 days) and the newest community puzzles, with the
+ *  viewer's result on each. Missing days (no post) are skipped. */
+api.get('/archive', async (c) => {
+  const { userId } = context;
+  const today = puzzleNumberFor(Date.now());
+  const days = Array.from({ length: Math.min(30, today) }, (_, i) => today - i);
+  const daily = (
+    await Promise.all(
+      days.map(async (n): Promise<ArchiveEntry | null> => {
+        const postId = await postForPuzzle(n);
+        if (!postId) return null;
+        const scope = dailyScope(n);
+        const [p, stats, mine] = await Promise.all([
+          getPuzzle(n),
+          getStats(scope),
+          userId ? getResult(scope, userId) : null,
+        ]);
+        return {
+          postId,
+          title: `Fold #${n}`,
+          detail: `${dateForPuzzle(n)} · ${p.tier}`,
+          target: p.target,
+          par: p.par,
+          players: stats.players,
+          mine,
+          today: n === today,
+        };
+      })
+    )
+  ).filter((e): e is ArchiveEntry => e !== null);
+
+  const community = (
+    await Promise.all(
+      (await recentCustoms(20)).map(async (postId): Promise<ArchiveEntry | null> => {
+        const p = await getCustom(postId);
+        if (!p) return null;
+        const scope = customScope(postId);
+        const [stats, mine] = await Promise.all([
+          getStats(scope),
+          userId ? getResult(scope, userId) : null,
+        ]);
+        return {
+          postId,
+          title: `by u/${p.author}`,
+          detail: 'Community puzzle',
+          target: p.target,
+          par: p.par,
+          players: stats.players,
+          mine,
+          today: false,
+        };
+      })
+    )
+  ).filter((e): e is ArchiveEntry => e !== null);
+
+  return c.json<ArchiveResponse>({ type: 'archive', daily, community });
 });
 
 /** Tiny endpoint for the feed card: how many people solved this post. */

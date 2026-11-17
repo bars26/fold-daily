@@ -57,6 +57,26 @@ window.fetch = async (input: RequestInfo | URL, init?: RequestInit) => {
       ],
       me: null,
     });
+  if (url.startsWith('/api/archive')) {
+    const entries = [n, n - 1, n - 2].filter((x) => x >= 1).map((x, i) => {
+      const p = generate(x);
+      return {
+        postId: i === 0 ? 't3_preview' : `t3_old${x}`,
+        title: `Fold #${x}`,
+        detail: `${dateForPuzzle(x)} · ${p.tier.name}`,
+        target: p.target,
+        par: p.par,
+        players: 20 - i * 6,
+        mine: i === 1 ? { folds: p.par, ms: 40000, hints: 0, onTime: true } : i === 2 ? { folds: p.par + 1, ms: 90000, hints: 1, onTime: false } : null,
+        today: i === 0,
+      };
+    });
+    return reply({
+      type: 'archive',
+      daily: entries,
+      community: [{ postId: 't3_c1', title: 'by u/origami_otter', detail: 'Community puzzle', target: g.target, par: 2, players: 4, mine: null, today: false }],
+    });
+  }
   if (url.startsWith('/api/stats')) return reply({ type: 'stats', players: 23 });
   if (url.startsWith('/api/share')) return reply({ type: 'share', ok: true });
   if (url.startsWith('/api/create')) {

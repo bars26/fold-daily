@@ -56,6 +56,20 @@ export type LeaderboardResponse = {
 
 export type ShareResponse = { type: 'share'; ok: true };
 
+export type ArchiveEntry = {
+  postId: string;
+  title: string;
+  /** Short line under the title: date and tier, or the creator. */
+  detail: string;
+  target: string;
+  par: number;
+  players: number;
+  mine: MyResult | null;
+  today: boolean;
+};
+
+export type ArchiveResponse = { type: 'archive'; daily: ArchiveEntry[]; community: ArchiveEntry[] };
+
 export type CreateRequest = { w: number; h: number; front: number[]; folds: Fold[] };
 
 export type CreateResponse = { type: 'create'; url: string; par: number };
