@@ -13,7 +13,7 @@ A daily folding puzzle: fold a sheet of coloured tiles until it matches the pict
 ## Required links
 
 - **App listing:** https://developers.reddit.com/apps/fold-daily
-- **Demo post:** `<paste the URL of today's Fold post in r/FoldDaily>`
+- **Demo post:** https://www.reddit.com/r/FoldDaily/comments/1xyjhsr/fold_1_tue_nov_17_easy_par_2/
 - **Community:** https://www.reddit.com/r/FoldDaily/
 - **Source code:** https://github.com/bars26/fold-daily
 
