@@ -26,6 +26,7 @@ import { formatMs } from '../shared/share.ts';
 import { Board } from './Board.tsx';
 import { Pattern } from './Pattern.tsx';
 import { HowTo } from './HowTo.tsx';
+import { Tutorial } from './Tutorial.tsx';
 import { track } from './track.ts';
 import { Creator } from './Creator.tsx';
 import { isMuted, playFold, playWin, setMuted } from './sound.ts';
@@ -329,7 +330,8 @@ export const App = () => {
   const [showResult, setShowResult] = useState(false);
   const [solved, setSolved] = useState(false);
   const [tutorial, setTutorial] = useState(!readFlag(TUTORIAL_KEY));
-  const [howTo, setHowTo] = useState(!readFlag(TUTORIAL_KEY));
+  const [howTo, setHowTo] = useState(false);
+  const [lesson, setLesson] = useState(!readFlag(TUTORIAL_KEY));
   const [hint, setHint] = useState<{ fold: Fold; paper: PaperState } | null>(null);
   const [hints, setHints] = useState(0);
   const [thinking, setThinking] = useState(false);
@@ -585,7 +587,7 @@ export const App = () => {
             </button>
           </div>
         )}
-        {!deadEnd && tutorial && !howTo && folds.length === 0 && (
+        {!deadEnd && tutorial && !howTo && !lesson && folds.length === 0 && (
           <p className="nudge pointer-events-none absolute bottom-2 rounded-full bg-ink-2/90 px-4 py-1.5 text-sm text-paper ring-1 ring-white/10">
             Tap a dashed crease, then the side to fold over
           </p>
@@ -630,6 +632,15 @@ export const App = () => {
       </footer>
 
       {howTo && <HowTo onClose={closeHowTo} />}
+
+      {lesson && (
+        <Tutorial
+          onDone={() => {
+            setLesson(false);
+            writeFlag(TUTORIAL_KEY);
+          }}
+        />
+      )}
 
       {creating && <Creator loggedIn={!!data.username} onClose={() => setCreating(false)} />}
 
