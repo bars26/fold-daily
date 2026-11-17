@@ -36,6 +36,8 @@ export const checkCustom = (w: number, h: number, front: unknown, folds: unknown
     return { ok: false, reason: 'Make some colour show — all kraft is too easy' };
   }
   const par = minFolds(w, h, front as number[], BACK, target, folds.length);
-  if (par === null || par < 1) return { ok: false, reason: 'That pattern is too easy' };
+  if (par === null || par < 2) {
+    return { ok: false, reason: 'Too easy: it can be matched in one fold. Add another fold.' };
+  }
   return { ok: true, target, par };
 };

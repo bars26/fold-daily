@@ -40,3 +40,7 @@ test('rejects an all-kraft picture', () => {
   ]);
   assert.equal(r.ok, false);
 });
+
+test('rejects one-fold puzzles', () => {
+  assert.equal(checkCustom(4, 4, front, [{ axis: 'x', at: 1, from: 'low' }]).ok, false);
+});

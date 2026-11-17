@@ -162,7 +162,7 @@ export const Creator = ({ loggedIn, onClose }: Props) => {
                   {folds.length} / {MAX_CUSTOM_FOLDS} folds
                   {check?.ok ? ` · par ${check.par}` : ''}
                 </p>
-                {!folds.length && <p className="text-paper/60">Fold the sheet 1–4 times.</p>}
+                {!folds.length && <p className="text-paper/60">Fold the sheet 2–4 times.</p>}
                 {check && !check.ok && <p className="text-ember">{check.reason}</p>}
               </div>
             </div>
